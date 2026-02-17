@@ -13,7 +13,7 @@ jobs:
       - name: Fetch release info
         run: |
           sudo apt install jq
-          LATESTFLORIDARELEASETAG=$(curl -s https://api.github.com/repos/hzzheyang/strongR-frida-android/releases/latest | jq -r '.tag_name')
+          LATESTFLORIDARELEASETAG=$(curl -s https://api.github.com/repos/Ylarod/Florida/releases/latest | jq -r '.tag_name')
           LATESTMODULETAG=$(curl -s https://api.github.com/repos/Exo1i/MagiskHluda/releases/latest | jq -r '.tag_name')
           echo "LATESTFLORIDARELEASETAG=${LATESTFLORIDARELEASETAG}" >> $GITHUB_ENV
           echo "LATESTMODULETAG=${LATESTMODULETAG}" >> $GITHUB_ENV
