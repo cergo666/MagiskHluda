@@ -42,7 +42,7 @@ void download(const std::string& aarch)
 
     std::cout << "Starting To Downloaded florida for arch: " + aarch + "\n";
 
-    std::string url = "https://github.com/ylarod/florida/releases/download/" + utils::latestTag +
+    std::string url = "https://github.com/c0re100/Florida/releases/download/" + utils::latestTag +
         "/florida-server-" + utils::latestTag + "-android-" + aarch + ".gz";
 
     std::unique_ptr<RestClient::Connection> pConnection(new RestClient::Connection(url));
