@@ -41,7 +41,7 @@ jobs:
         with:
           path: |
             vcpkg
-            ~/vcpkg/installed
+            vcpkg_installed
           key: ${{ runner.os }}-vcpkg-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
           restore-keys: |
             ${{ runner.os }}-vcpkg-
@@ -52,7 +52,7 @@ jobs:
             git clone --depth 1 https://github.com/Microsoft/vcpkg.git
           fi
           ./vcpkg/bootstrap-vcpkg.sh
-          ./vcpkg/vcpkg install rapidjson restclient-cpp
+          ./vcpkg/vcpkg install
       - name: Build MagiskHluda
         if: steps.check_release.outputs.should_release == 'true'
         run: |
