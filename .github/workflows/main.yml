@@ -36,9 +36,14 @@ jobs:
       - name: Check if release needed
         id: check_release
         run: |
-          if [ "${{ env.LATESTFLORIDARELEASETAG }}" != "${{ env.LATESTMODULETAG }}" ] && \
-             [ "${{ env.LATESTFLORIDARELEASETAG }}" != "null" ] && \
-             [ "${{ env.LATESTMODULETAG }}" != "null" ]; then
+          # Schedule/push: only when Florida has a newer tag than this module.
+          # workflow_dispatch: always rebuild (same Frida version can still be a
+          # new Florida binary + new Magisk scripts).
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "should_release=true" >> $GITHUB_OUTPUT
+          elif [ "${{ env.LATESTFLORIDARELEASETAG }}" != "${{ env.LATESTMODULETAG }}" ] && \
+               [ "${{ env.LATESTFLORIDARELEASETAG }}" != "null" ] && \
+               [ "${{ env.LATESTMODULETAG }}" != "null" ]; then
             echo "should_release=true" >> $GITHUB_OUTPUT
           else
             echo "should_release=false" >> $GITHUB_OUTPUT
@@ -114,4 +119,6 @@ jobs:
           tag: "${{ env.LATESTFLORIDARELEASETAG }}"
           body: "Universal package and architecture-specific packages for Florida Server ${{env.LATESTFLORIDARELEASETAG}}"
           generateReleaseNotes: false
+          allowUpdates: true
+          replacesArtifacts: true
           token: ${{ secrets.GITHUB_TOKEN }}
