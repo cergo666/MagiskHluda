@@ -1,13 +1,31 @@
 # MagiskHluda
 
+<p align="center">
+  <a href="https://github.com/cergo666/MagiskHluda/releases"><img src="https://img.shields.io/github/v/release/cergo666/MagiskHluda?style=flat-square&logo=github" alt="release"></a>
+  <a href="https://github.com/cergo666/MagiskHluda/releases"><img src="https://img.shields.io/github/downloads/cergo666/MagiskHluda/total?style=flat-square&color=blue" alt="downloads"></a>
+  <a href="https://github.com/cergo666/MagiskHluda/releases/latest"><img src="https://img.shields.io/github/downloads/cergo666/MagiskHluda/latest/total?style=flat-square&label=latest%20downloads" alt="latest downloads"></a>
+  <a href="https://github.com/cergo666/MagiskHluda/stargazers"><img src="https://img.shields.io/github/stars/cergo666/MagiskHluda?style=flat-square" alt="stars"></a>
+  <a href="https://github.com/cergo666/MagiskHluda/actions/workflows/main.yml"><img src="https://img.shields.io/github/actions/workflow/status/cergo666/MagiskHluda/main.yml?style=flat-square&label=CI" alt="CI"></a>
+  <img src="https://img.shields.io/github/repo-size/cergo666/MagiskHluda?style=flat-square" alt="repo size">
+</p>
+
+<p align="center">
+  <a href="README.md">Русский</a> · <b>English</b>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/cergo666/Florida"><img src="https://img.shields.io/github/v/release/cergo666/Florida?style=flat-square&label=Florida" alt="Florida"></a>
+</p>
+
 A Magisk / KernelSU / APatch module that starts [Florida](https://github.com/cergo666/Florida) (patched Frida-server) on boot.
 
 Each Florida release ships a random listen port in `identities.json`. The module reads that port and binds **127.0.0.1** by default, not `0.0.0.0:27042`.
 
-[Русский](README.md) · **English**
+## Ecosystem
 
-![GitHub repo size](https://img.shields.io/github/repo-size/cergo666/MagiskHluda)
-![GitHub downloads](https://img.shields.io/github/downloads/cergo666/MagiskHluda/total)
+| Repo | Role |
+|---|---|
+| [Florida](https://github.com/cergo666/Florida) | builds `florida-server` / gadget / inject |
+| **MagiskHluda** (this one) | Magisk / KernelSU / APatch module, start on boot |
+| [Ylarod/Florida](https://github.com/Ylarod/Florida) | original fork |
 
 ## Install
 
@@ -42,7 +60,7 @@ The Magisk / KSU module page can open a small web UI:
 
 Stopping Florida **may crash System UI**. Save work before stopping it.
 
-## Build the package
+## Build
 
 The packager downloads `florida-server` and `identities.json` from [cergo666/Florida](https://github.com/cergo666/Florida).
 
@@ -53,11 +71,13 @@ cmake --build build --config Release
 ./build/MagiskHluda
 ```
 
-Module script checks:
+## Tests
 
 ```bash
 sh tests/test_scripts.sh
 ```
+
+CI runs these checks on every push.
 
 ## Limits
 
@@ -71,6 +91,8 @@ Florida removes well-known **strings** from the binary. It does not hide inline 
 - [StrongR-Frida](https://github.com/hzzheyang/strongR-frida-android)
 - [magisk-frida](https://github.com/ViRb3/magisk-frida) ([issue #16](https://github.com/ViRb3/magisk-frida/issues/16))
 
-<a href="https://github.com/cergo666/MagiskHluda/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=cergo666/MagiskHluda" alt="contributors" />
-</a>
+<p align="center">
+  <a href="https://github.com/cergo666/MagiskHluda/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=cergo666/MagiskHluda" alt="contributors">
+  </a>
+</p>
