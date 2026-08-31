@@ -1,93 +1,76 @@
-# **Florida on Boot: Seamlessly Start a More Undetectable Frida-server on Boot**
+# MagiskHluda
+
+Magisk / KernelSU / APatch-модуль: [Florida](https://github.com/cergo666/Florida) (патченый Frida-server) поднимается при загрузке системы.
+
+Каждый релиз Florida кладёт случайный порт в `identities.json`. Модуль читает его и по умолчанию слушает **127.0.0.1**, а не `0.0.0.0:27042`.
+
+**Русский** · [English](README_EN.md)
 
 ![GitHub repo size](https://img.shields.io/github/repo-size/cergo666/MagiskHluda)
 ![GitHub downloads](https://img.shields.io/github/downloads/cergo666/MagiskHluda/total)
 
-## **Overview**
+## Установка
 
-This Magisk module is based on [Florida](https://github.com/cergo666/Florida), a modified version of [Frida](https://github.com/frida/frida/) designed to be more undetectable. It ensures that Florida automatically starts on boot, providing a seamless experience for security testing and reverse engineering.
+1. Скачайте ZIP с [Releases](https://github.com/cergo666/MagiskHluda/releases) под архитектуру устройства или universal-пакет.
+2. Поставьте через Magisk / KernelSU / KSUN / APatch.
 
-Each Florida release ships a random listen port in `identities.json`. The module
-reads that port and binds **127.0.0.1** by default (not `0.0.0.0:27042`). Connect:
+Архитектуры: `arm64`, `arm`, `x86`, `x86_64`.
+
+Обновления модуля проверяются по расписанию CI (~каждые 12 часов), когда выходит новый релиз Florida.
+
+## Подключение
+
+Порт печатается при установке и лежит в `/data/adb/modules/magisk-hluda/module.cfg`:
 
 ```bash
-# port is also printed at install time and stored in module.cfg
 adb forward tcp:<port> tcp:<port>
 frida-ps -H 127.0.0.1:<port>
 ```
 
-`frida -U` still talks to `tcp:27042` on the device. Either change listen/port in
-the Web UI to `0.0.0.0:27042`, or keep the stealth defaults and use `-H` as above.
+`frida -U` по-прежнему ходит в `tcp:27042` на устройстве. Либо в Web UI выставьте `0.0.0.0:27042`, либо оставьте стелс-дефолты и используйте `-H`, как выше.
 
-## **New Web UI for Easier Control**
+Подробнее: [troubleshooting.md](troubleshooting.md).
 
-A **web-based user interface** has been added, making it easier to manage the Florida server:
+## Web UI
 
-- **Start/Stop Server** button.
-- Access to **command usage documentation**.
-- Display for **server status**.
-- Input for **custom parameters**.
+В Magisk / KSU можно открыть веб-интерфейс модуля:
 
-This Web UI simplifies the management of the Florida server, allowing you to interact with it without needing a terminal.
+- старт / стоп сервера;
+- статус;
+- порт и адрес listen;
+- дополнительные параметры CLI.
 
-## **System UI Crashes Warning**
+Остановка Florida **может уронить System UI**. Сохраните работу перед стопом.
 
-Stopping the Florida server **may cause the System UI to crash**. This is a known issue and may cause temporary instability. Be cautious and save any important work before stopping the server.
+## Сборка пакета
 
-## **Features & Benefits**
+Упаковщик скачивает `florida-server` и `identities.json` с [cergo666/Florida](https://github.com/cergo666/Florida).
 
-- **Powerful tool** for dynamic analysis, reverse engineering, and security testing.
-- **Enhanced stealth**, making Florida a more undetectable version of Frida-server for Android.
+```bash
+./vcpkg install rapidjson restclient-cpp
+cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
+cmake --build build --config Release
+./build/MagiskHluda
+```
 
-## **Supported Architectures**
+Проверки скриптов модуля:
 
-- arm64
-- arm
-- x86
-- x86_64
+```bash
+sh tests/test_scripts.sh
+```
 
-## **Getting Started**
+## Ограничения
 
-1. **Download the latest release:** Visit the [Releases](https://github.com/cergo666/MagiskHluda/releases) page and download the latest ZIP file that corresponds to your device's architecture or just use the universal package.
-2. **Install via Magisk/KSU/KSUN/APatch:** Use any root solution to install the module.
+Florida убирает известные **строки** в бинарнике. Inline-хуки и сверка `.text` с диском так не спрятать. Если Florida всё ещё ловят, можно смотреть в сторону [ZygiskFrida](https://github.com/lico-n/ZygiskFrida).
 
-## **Automatic Updates**
+## Ссылки
 
-- **Updates are checked every 12 hours**, ensuring you always have the latest version.
-
-## **Troubleshooting**
-
-If you encounter any issues, refer to the [Troubleshooting Guide](https://github.com/Exo1i/MagiskHluda/blob/main/troubleshooting.md).
-
-## **Building from Source**
-
-1. **Install dependencies:** Install `rapidjson` and `restclient-cpp` using [vcpkg](https://vcpkg.io/en/getting-started):
-   ```bash
-   ./vcpkg install rapidjson restclient-cpp
-   ```
-2. **Run the code:** Execute `main.cpp` in your preferred IDE (CLion or Visual Studio is recommended).
-
-## **Credits**
-
-Special thanks to:
-- [StrongR-Frida by hzzheyang](https://github.com/hzzheyang/strongR-frida-android)
 - [Florida](https://github.com/cergo666/Florida)
-- [magisk-frida by ViRb3](https://github.com/ViRb3/magisk-frida), particularly the enhancement request: [Issue #16](https://github.com/ViRb3/magisk-frida/issues/16)
-
-## **Contributors**
-
-Thanks to all contributors who have helped with this project!
+- [Frida](https://github.com/frida/frida)
+- [Ylarod/Florida](https://github.com/Ylarod/Florida)
+- [StrongR-Frida](https://github.com/hzzheyang/strongR-frida-android)
+- [magisk-frida](https://github.com/ViRb3/magisk-frida) ([issue #16](https://github.com/ViRb3/magisk-frida/issues/16))
 
 <a href="https://github.com/cergo666/MagiskHluda/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=cergo666/MagiskHluda" />
+  <img src="https://contrib.rocks/image?repo=cergo666/MagiskHluda" alt="contributors" />
 </a>
-
-
-## **Still Being Detected?**
-
-If Florida is still being detected, consider using [ZygiskFrida](https://github.com/lico-n/ZygiskFrida) as an alternative.
-
-## **Learning Journey**
-
-This project is my **first semester project**, and it has been an invaluable learning experience. I have gained significant knowledge and skills along the way.
-
