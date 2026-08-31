@@ -66,14 +66,26 @@ unzip -qq -o "$ZIPFILE" 'post-fs-data.sh' -d "$MODPATH"
 unzip -qq -o "$ZIPFILE" 'service.sh' -d "$MODPATH"
 unzip -qq -o "$ZIPFILE" 'uninstall.sh' -d "$MODPATH"
 unzip -qq -o "$ZIPFILE" 'webroot/*' -d "$MODPATH"
+unzip -qq -o "$ZIPFILE" 'identities.json' -d "$MODPATH" 2>/dev/null || true
 mkdir -p "$MODPATH/system/bin"
+
+DEFAULT_LISTEN="127.0.0.1"
+DEFAULT_PORT="27042"
+if [ -f "$MODPATH/identities.json" ]; then
+  parsed=$(sed -n 's/.*"control_port"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p' "$MODPATH/identities.json" | head -1)
+  if [ -n "$parsed" ]; then
+    DEFAULT_PORT="$parsed"
+  fi
+fi
 
 if ! test -f "$MODPATH/module.cfg"; then
   {
-  echo "port=27042"
+  echo "port=$DEFAULT_PORT"
+  echo "listen=$DEFAULT_LISTEN"
   echo "parameters="
   echo "status=1"
    } >> "$MODPATH/module.cfg"
+  ui_print "- Listen ${DEFAULT_LISTEN}:${DEFAULT_PORT} (from identities.json unless missing)"
 fi
 
 # Handle architecture-specific files
@@ -114,7 +126,8 @@ unzip -qq -o -j "$ZIPFILE" "bin/$BINARY_FILE" "$TMPDIR"
 # Decompress based on file extension
 if [[ "$BINARY_FILE" == *.gz ]]; then
   gzip -d "$TMPDIR/$BINARY_FILE"
-  mv "$TMPDIR/florida-$ARCH" "$MODPATH/system/bin/florida"
+  # Magisk ARCH is x86_64; the packed name is florida-x64. Use the gzip stem.
+  mv "$TMPDIR/${BINARY_FILE%.gz}" "$MODPATH/system/bin/florida"
 fi
 
 ui_print "- Setting permissions"

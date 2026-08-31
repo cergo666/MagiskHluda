@@ -1,11 +1,23 @@
 # **Florida on Boot: Seamlessly Start a More Undetectable Frida-server on Boot**
 
-![GitHub repo size](https://img.shields.io/github/repo-size/Exo1i/MagiskHluda)
-![GitHub downloads](https://img.shields.io/github/downloads/Exo1i/magiskhluda/total)
+![GitHub repo size](https://img.shields.io/github/repo-size/cergo666/MagiskHluda)
+![GitHub downloads](https://img.shields.io/github/downloads/cergo666/MagiskHluda/total)
 
 ## **Overview**
 
-This Magisk module is based on [Florida](https://github.com/Ylarod/Florida), a modified version of [Frida](https://github.com/frida/frida/) designed to be more undetectable. It ensures that Florida automatically starts on boot, providing a seamless experience for security testing and reverse engineering.
+This Magisk module is based on [Florida](https://github.com/cergo666/Florida), a modified version of [Frida](https://github.com/frida/frida/) designed to be more undetectable. It ensures that Florida automatically starts on boot, providing a seamless experience for security testing and reverse engineering.
+
+Each Florida release ships a random listen port in `identities.json`. The module
+reads that port and binds **127.0.0.1** by default (not `0.0.0.0:27042`). Connect:
+
+```bash
+# port is also printed at install time and stored in module.cfg
+adb forward tcp:<port> tcp:<port>
+frida-ps -H 127.0.0.1:<port>
+```
+
+`frida -U` still talks to `tcp:27042` on the device. Either change listen/port in
+the Web UI to `0.0.0.0:27042`, or keep the stealth defaults and use `-H` as above.
 
 ## **New Web UI for Easier Control**
 
@@ -36,7 +48,7 @@ Stopping the Florida server **may cause the System UI to crash**. This is a know
 
 ## **Getting Started**
 
-1. **Download the latest release:** Visit the [Releases](https://github.com/Exo1i/MagiskHluda/releases) page and download the latest ZIP file that corresponds to your device's architecture or just use the universal package.
+1. **Download the latest release:** Visit the [Releases](https://github.com/cergo666/MagiskHluda/releases) page and download the latest ZIP file that corresponds to your device's architecture or just use the universal package.
 2. **Install via Magisk/KSU/KSUN/APatch:** Use any root solution to install the module.
 
 ## **Automatic Updates**
@@ -59,15 +71,15 @@ If you encounter any issues, refer to the [Troubleshooting Guide](https://github
 
 Special thanks to:
 - [StrongR-Frida by hzzheyang](https://github.com/hzzheyang/strongR-frida-android)
-- [Florida](https://github.com/Ylarod/Florida)
+- [Florida](https://github.com/cergo666/Florida)
 - [magisk-frida by ViRb3](https://github.com/ViRb3/magisk-frida), particularly the enhancement request: [Issue #16](https://github.com/ViRb3/magisk-frida/issues/16)
 
 ## **Contributors**
 
 Thanks to all contributors who have helped with this project!
 
-<a href="https://github.com/Exo1i/MagiskHluda/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Exo1i/MagiskHluda" />
+<a href="https://github.com/cergo666/MagiskHluda/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=cergo666/MagiskHluda" />
 </a>
 
 

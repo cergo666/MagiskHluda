@@ -36,8 +36,10 @@ if [ -f "$MODULE_CFG" ]; then
    if [ "$status" = "1" ]; then
        # Start service if not running
        if ! pgrep -x "florida" > /dev/null; then
-           # Build command with port and parameters
-           CMD="florida -D -l 0.0.0.0:$port"
+           # Default: loopback + identities port. 0.0.0.0:27042 is a detector probe.
+           listen=${listen:-127.0.0.1}
+           port=${port:-27042}
+           CMD="florida -D -l ${listen}:${port}"
 
            # Add additional parameters if specified
            if [ -n "$parameters" ]; then

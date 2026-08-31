@@ -15,7 +15,7 @@ const std::string basePath = "./module_template/";
 
 std::string utils::getRecentTag()
 {
-    const std::string url = "https://api.github.com/repos/hzzheyang/strongR-frida-android/releases/latest";
+    const std::string url = "https://api.github.com/repos/cergo666/Florida/releases/latest";
     RestClient::Response response = RestClient::get(url);
 
     if (response.code != 200)
@@ -77,6 +77,31 @@ void download(const std::string& aarch)
         "s\n";
 }
 
+void downloadIdentities()
+{
+    std::string url = "https://github.com/cergo666/Florida/releases/download/" + utils::latestTag +
+        "/florida-identities-" + utils::latestTag + ".json";
+
+    std::unique_ptr<RestClient::Connection> pConnection(new RestClient::Connection(url));
+    pConnection->FollowRedirects(true);
+    RestClient::Response response = pConnection->get("/");
+
+    if (response.code != 200)
+    {
+        std::cerr << "Warning: identities.json not in Florida " << utils::latestTag
+            << " (HTTP " << response.code << "). Module will default to 127.0.0.1:27042.\n";
+        return;
+    }
+
+    std::ofstream out(basePath + "identities.json");
+    if (!out)
+    {
+        throw std::runtime_error("Failed to open module_template/identities.json for writing");
+    }
+    out.write(response.body.c_str(), static_cast<std::streamsize>(response.body.length()));
+    std::cout << "Wrote identities.json for " << utils::latestTag << "\n";
+}
+
 void utils::downloadServers()
 {
     fs::create_directories("./bin");
@@ -94,6 +119,8 @@ void utils::downloadServers()
             throw std::runtime_error("Error downloading " + aarch + ": " + e.what());
         }
     }
+
+    downloadIdentities();
 }
 
 void utils::createModuleProps()

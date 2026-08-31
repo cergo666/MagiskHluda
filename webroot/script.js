@@ -5,6 +5,7 @@ const statusText = document.getElementById('serverStatusText');
 const toggleBtn = document.getElementById('toggleServerBtn');
 const saveSettingsBtn = document.getElementById('saveSettingsBtn');
 const portInput = document.getElementById('portInput');
+const listenInput = document.getElementById('listenInput');
 const customParamsInput = document.getElementById('customParams');
 const warningDialog = document.getElementById('warningDialog');
 const cancelStop = document.getElementById('cancelStop');
@@ -14,11 +15,30 @@ let isServerRunning = false;
 
 const MODULE_PROP_PATH = '/data/adb/modules/magisk-hluda/module.prop';
 const MODULE_SETTINGS_FILE = '/data/adb/modules/magisk-hluda/module.cfg';
+const IDENTITIES_FILE = '/data/adb/modules/magisk-hluda/identities.json';
+
+async function portFromIdentities() {
+    try {
+        const {errno, stdout} = await exec(
+            `sed -n 's/.*"control_port"[[:space:]]*:[[:space:]]*\\([0-9][0-9]*\\).*/\\1/p' ${IDENTITIES_FILE}`
+        );
+        if (errno === 0 && stdout.trim()) {
+            return stdout.trim();
+        }
+    } catch (error) {
+        console.error('identities.json not readable', error);
+    }
+    return '27042';
+}
 
 async function initializeConfigFile() {
     try {
         const status = isServerRunning ? 1 : 0;
-        const configContent = `port=${portInput.value}\nparameters=${customParamsInput.value}\nstatus=${status}`;
+        const listen = (listenInput.value || '127.0.0.1').trim();
+        const port = portInput.value || await portFromIdentities();
+        portInput.value = port;
+        listenInput.value = listen;
+        const configContent = `port=${port}\nlisten=${listen}\nparameters=${customParamsInput.value}\nstatus=${status}`;
         await exec(`echo '${configContent}' > ${MODULE_SETTINGS_FILE}`);
         console.log('Created module.cfg with default values');
     } catch (error) {
@@ -29,11 +49,16 @@ async function initializeConfigFile() {
 
 async function saveSettings() {
     try {
-        // Validate port number
         const portNum = parseInt(portInput.value);
         if (isNaN(portNum) || portNum < 1 || portNum > 65535) {
-            toast('Invalid port number. Using default port 27042');
-            portInput.value = '27042';
+            toast('Invalid port number');
+            return;
+        }
+
+        const listen = (listenInput.value || '127.0.0.1').trim();
+        if (!listen) {
+            toast('Listen address is required');
+            return;
         }
 
         // Check if config file exists
@@ -44,8 +69,14 @@ async function saveSettings() {
             return;
         }
 
-        // Save port setting
+        // Save port / listen
         await exec(`sed -i "s/^port=.*/port=${portInput.value}/" ${MODULE_SETTINGS_FILE}`);
+        const listenLine = (await exec(`grep -c "^listen=" ${MODULE_SETTINGS_FILE}`)).stdout.trim();
+        if (listenLine === '0') {
+            await exec(`echo 'listen=${listen}' >> ${MODULE_SETTINGS_FILE}`);
+        } else {
+            await exec(`sed -i "s/^listen=.*/listen=${listen}/" ${MODULE_SETTINGS_FILE}`);
+        }
 
         // Save parameters setting (escape special characters)
         const escapedParams = customParamsInput.value
@@ -77,10 +108,11 @@ async function loadSettings() {
 
         // Read current settings
         const {stdout: portValue} = await exec(`grep "^port=" ${MODULE_SETTINGS_FILE} | cut -d= -f2`);
+        const {stdout: listenValue} = await exec(`grep "^listen=" ${MODULE_SETTINGS_FILE} | cut -d= -f2`);
         const {stdout: paramsValue} = await exec(`grep "^parameters=" ${MODULE_SETTINGS_FILE} | cut -d= -f2-`);
 
-        // Update input fields
-        portInput.value = portValue.trim() || '27042';
+        portInput.value = portValue.trim() || await portFromIdentities();
+        listenInput.value = listenValue.trim() || '127.0.0.1';
         customParamsInput.value = paramsValue.trim() || '';
 
     } catch (error) {
@@ -122,8 +154,9 @@ async function checkServerStatus() {
     }
 }
 
-async function startServer(port, customParams) {
-    const baseCommand = `florida -D -l 0.0.0.0:${port}`;
+async function startServer(port, listen, customParams) {
+    const address = listen || '127.0.0.1';
+    const baseCommand = `florida -D -l ${address}:${port}`;
     const fullCommand = customParams ? `${baseCommand} ${customParams}` : baseCommand;
 
     try {
@@ -165,12 +198,13 @@ async function stopServer() {
 saveSettingsBtn.addEventListener('click', saveSettings);
 
 toggleBtn.addEventListener('click', async () => {
-    const port = portInput.value || '27042';
+    const port = portInput.value || await portFromIdentities();
+    const listen = listenInput.value || '127.0.0.1';
     const customParams = customParamsInput.value;
 
     if (!isServerRunning) {
         await saveSettings();
-        await startServer(port, customParams);
+        await startServer(port, listen, customParams);
     } else {
         warningDialog.style.display = 'flex';
     }
