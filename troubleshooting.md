@@ -3,8 +3,9 @@
 ## Listen address / port
 - Default is `127.0.0.1` and the port from Florida's `identities.json` (not 27042)
 - Check `/data/adb/modules/magisk-hluda/module.cfg` for `listen=` and `port=`
-- Forward that port: `adb forward tcp:<port> tcp:<port>` then `frida-ps -H 127.0.0.1:<port>`
-- If you need `frida -U`, set listen to `0.0.0.0` and port `27042` in the Web UI
+- Host helper: `scripts/hluda` (reads the port and runs `adb forward` for you)
+- Forward by hand: `adb forward tcp:<port> tcp:<port>` then `frida-ps -H 127.0.0.1:<port>`
+- If you need `frida -U`, set listen to `127.0.0.1` and port `27042` in the Web UI
 
 ## Try first
 - Ensure `adb devices` shows your device

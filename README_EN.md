@@ -38,14 +38,28 @@ Module updates are checked on a CI schedule (~every 12 hours) when a new Florida
 
 ## Connect
 
-The port is printed at install time and stored in `/data/adb/modules/magisk-hluda/module.cfg`:
+The port is in `/data/adb/modules/magisk-hluda/module.cfg`. Easiest path: host wrapper `scripts/hluda` — it reads the port, runs `adb forward`, and injects `-H`.
+
+```bash
+chmod +x scripts/hluda
+ln -sf "$PWD/scripts/hluda" ~/.local/bin/hluda
+ln -sf "$PWD/scripts/hluda" ~/.local/bin/hluda-ps
+
+hluda ps                          # instead of frida-ps -H 127.0.0.1:<port>
+hluda -f com.example.app          # instead of frida -U -f ...
+hluda -f com.example.app -l hook.js
+```
+
+Multiple devices: `ANDROID_SERIAL=emulator-5554 hluda ps`.
+
+By hand:
 
 ```bash
 adb forward tcp:<port> tcp:<port>
 frida-ps -H 127.0.0.1:<port>
 ```
 
-`frida -U` still talks to `tcp:27042` on the device. Either set listen/port in the Web UI to `0.0.0.0:27042`, or keep the stealth defaults and use `-H` as above.
+`frida -U` still talks to `tcp:27042` on the device. Either set `listen=127.0.0.1` and `port=27042` in the Web UI, or keep the stealth defaults and use `hluda`.
 
 See also [troubleshooting.md](troubleshooting.md).
 

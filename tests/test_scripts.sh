@@ -10,6 +10,7 @@ fail() {
 
 sh -n module_template/customize.sh || fail "customize.sh syntax"
 sh -n module_template/service.sh || fail "service.sh syntax"
+bash -n scripts/hluda || fail "scripts/hluda syntax"
 
 # Magisk reports x86_64; the Florida asset is florida-x64.gz.
 BINARY_FILE="florida-x64.gz"

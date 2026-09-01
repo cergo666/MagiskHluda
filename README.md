@@ -38,14 +38,28 @@ Magisk / KernelSU / APatch-модуль: [Florida](https://github.com/cergo666/F
 
 ## Подключение
 
-Порт печатается при установке и лежит в `/data/adb/modules/magisk-hluda/module.cfg`:
+Порт в `/data/adb/modules/magisk-hluda/module.cfg`. Проще всего хост-обёртка `scripts/hluda`: сама читает порт, делает `adb forward` и подставляет `-H`.
+
+```bash
+chmod +x scripts/hluda
+ln -sf "$PWD/scripts/hluda" ~/.local/bin/hluda
+ln -sf "$PWD/scripts/hluda" ~/.local/bin/hluda-ps
+
+hluda ps                          # вместо frida-ps -H 127.0.0.1:<port>
+hluda -f com.example.app          # вместо frida -U -f ...
+hluda -f com.example.app -l hook.js
+```
+
+Несколько устройств: `ANDROID_SERIAL=emulator-5554 hluda ps`.
+
+Вручную:
 
 ```bash
 adb forward tcp:<port> tcp:<port>
 frida-ps -H 127.0.0.1:<port>
 ```
 
-`frida -U` по-прежнему ходит в `tcp:27042` на устройстве. Либо в Web UI выставьте `0.0.0.0:27042`, либо оставьте стелс-дефолты и используйте `-H`, как выше.
+`frida -U` по-прежнему ходит в `tcp:27042` на устройстве. Либо в Web UI выставьте `listen=127.0.0.1` и `port=27042`, либо оставьте стелс-дефолты и используйте `hluda`.
 
 Подробнее: [troubleshooting.md](troubleshooting.md).
 

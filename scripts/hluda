@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+# Host wrapper around frida / frida-ps / frida-trace.
+# Reads MagiskHluda module.cfg, sets adb forward, injects -H 127.0.0.1:<port>.
+#
+#   hluda -f com.example.app
+#   hluda ps
+#   hluda-ps
+#   ANDROID_SERIAL=emulator-5554 hluda ps
+set -euo pipefail
+
+CFG=/data/adb/modules/magisk-hluda/module.cfg
+
+adb_cmd() {
+  if [[ -n "${ANDROID_SERIAL:-}" ]]; then
+    command adb -s "$ANDROID_SERIAL" "$@"
+  else
+    command adb "$@"
+  fi
+}
+
+usage() {
+  cat <<'EOF'
+hluda — frida against MagiskHluda (port from module.cfg, adb forward for you)
+
+  hluda [frida args...]         # same as: frida -H 127.0.0.1:<port> ...
+  hluda ps [frida-ps args...]
+  hluda trace [frida-trace args...]
+  hluda --setup                 # only forward and print 127.0.0.1:<port>
+
+-U / --usb is dropped (USB still goes to 27042).
+ANDROID_SERIAL selects the device, same as adb.
+EOF
+}
+
+read_port() {
+  local raw
+  raw="$(adb_cmd shell "su -c 'grep ^port= ${CFG}'" | tr -d '\r')"
+  raw="${raw#port=}"
+  raw="${raw// /}"
+  if [[ ! "$raw" =~ ^[0-9]+$ ]]; then
+    echo "hluda: cannot read port from ${CFG} (got ${raw:-<empty>})" >&2
+    echo "hluda: is the module installed, and is this the right adb device?" >&2
+    exit 1
+  fi
+  printf '%s' "$raw"
+}
+
+strip_transport_args() {
+  # Drop -U/--usb and -H/--host [value] so we can inject our own -H.
+  out=()
+  skip=0
+  for a in "$@"; do
+    if (( skip )); then
+      skip=0
+      continue
+    fi
+    case "$a" in
+      -U|--usb) continue ;;
+      -H|--host) skip=1; continue ;;
+      --host=*) continue ;;
+      *) out+=("$a") ;;
+    esac
+  done
+}
+
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  usage
+  exit 0
+fi
+
+port="$(read_port)"
+host="127.0.0.1:${port}"
+adb_cmd forward "tcp:${port}" "tcp:${port}" >/dev/null
+
+if [[ "${1:-}" == "--setup" ]]; then
+  echo "$host"
+  exit 0
+fi
+
+tool=frida
+base="$(basename "$0")"
+case "$base" in
+  hluda-ps) tool=frida-ps ;;
+  hluda-trace) tool=frida-trace ;;
+esac
+if [[ "$base" == "hluda" ]]; then
+  case "${1:-}" in
+    ps) tool=frida-ps; shift ;;
+    trace) tool=frida-trace; shift ;;
+  esac
+fi
+
+if ! command -v "$tool" >/dev/null; then
+  echo "hluda: ${tool} is not on PATH" >&2
+  exit 1
+fi
+
+strip_transport_args "$@"
+exec "$tool" -H "$host" "${out[@]}"
