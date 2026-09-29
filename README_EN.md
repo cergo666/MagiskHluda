@@ -25,7 +25,8 @@ Each Florida release ships a random listen port in `identities.json`. The module
 |---|---|
 | [Florida](https://github.com/cergo666/Florida) | builds `florida-server` / gadget / inject |
 | **MagiskHluda** (this one) | Magisk / KernelSU / APatch module, start on boot |
-| [Ylarod/Florida](https://github.com/Ylarod/Florida) | original fork |
+| [Ylarod/Florida](https://github.com/Ylarod/Florida) | original Florida fork |
+| [Exo1i/MagiskHluda](https://github.com/Exo1i/MagiskHluda) | original Magisk module |
 
 ## Install
 
@@ -35,6 +36,25 @@ Each Florida release ships a random listen port in `identities.json`. The module
 Architectures: `arm64`, `arm`, `x86`, `x86_64`.
 
 Module updates are checked on a CI schedule (~every 12 hours) when a new Florida release appears.
+
+## How this fork differs from [Exo1i/MagiskHluda](https://github.com/Exo1i/MagiskHluda)
+
+The Florida binary is a separate story — patch comparison lives in [cergo666/Florida](https://github.com/cergo666/Florida/blob/main/README_EN.md#how-this-fork-differs-from-ylarodflorida). Below is the module only.
+
+| | [Exo1i/MagiskHluda](https://github.com/Exo1i/MagiskHluda) | This fork |
+|---|---|---|
+| Server source | [Ylarod/Florida](https://github.com/Ylarod/Florida) (classic patches, port 27042) | [cergo666/Florida](https://github.com/cergo666/Florida) (per-build identities) |
+| Release tag | could be fetched from the wrong repo | always `cergo666/Florida` |
+| Listen | **`0.0.0.0:27042`** | **`127.0.0.1`** + `control_port` from `identities.json` |
+| Config | `port=27042` | `port` + `listen` in `module.cfg`; JSON shipped in the zip |
+| gzip extract | `florida-$ARCH` breaks on x86_64 (file is `florida-x64`) | archive stem: `florida-x64.gz` → `florida-x64` |
+| Host client | `frida -U` / manual `-H` + forward | [`scripts/hluda`](scripts/hluda): port from cfg, `adb forward`, pass-through to `frida` |
+| Web UI | port 27042, listen `0.0.0.0` | identities port, listen field |
+| CI | release only when Florida tag ≠ module tag | same on schedule; **Run workflow** rebuilds and updates the zip |
+| Checks | none | `sh tests/test_scripts.sh` on every push |
+| Docs | EN, Exo1i links | RU + EN |
+
+`frida -U` still expects 27042. Use `hluda` for stealth defaults, or set `127.0.0.1:27042` in the Web UI for `-U`.
 
 ## Connect
 
@@ -99,6 +119,7 @@ Florida removes well-known **strings** from the binary. It does not hide inline 
 
 ## Links
 
+- [Exo1i/MagiskHluda](https://github.com/Exo1i/MagiskHluda)
 - [Florida](https://github.com/cergo666/Florida)
 - [Frida](https://github.com/frida/frida)
 - [Ylarod/Florida](https://github.com/Ylarod/Florida)

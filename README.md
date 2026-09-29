@@ -25,7 +25,8 @@ Magisk / KernelSU / APatch-модуль: [Florida](https://github.com/cergo666/F
 |---|---|
 | [Florida](https://github.com/cergo666/Florida) | сборка `florida-server` / gadget / inject |
 | **MagiskHluda** (этот) | Magisk / KernelSU / APatch-модуль, старт на boot |
-| [Ylarod/Florida](https://github.com/Ylarod/Florida) | исходный форк |
+| [Ylarod/Florida](https://github.com/Ylarod/Florida) | исходный форк Florida |
+| [Exo1i/MagiskHluda](https://github.com/Exo1i/MagiskHluda) | исходный Magisk-модуль |
 
 ## Установка
 
@@ -35,6 +36,25 @@ Magisk / KernelSU / APatch-модуль: [Florida](https://github.com/cergo666/F
 Архитектуры: `arm64`, `arm`, `x86`, `x86_64`.
 
 Обновления модуля проверяются по расписанию CI (~каждые 12 часов), когда выходит новый релиз Florida.
+
+## Чем этот форк отличается от [Exo1i/MagiskHluda](https://github.com/Exo1i/MagiskHluda)
+
+Бинарник Florida — отдельная история: сравнение патчей в [cergo666/Florida](https://github.com/cergo666/Florida#чем-этот-форк-отличается-от-ylarodflorida). Ниже — только модуль.
+
+| | [Exo1i/MagiskHluda](https://github.com/Exo1i/MagiskHluda) | Этот форк |
+|---|---|---|
+| Откуда сервер | [Ylarod/Florida](https://github.com/Ylarod/Florida) (классические патчи, порт 27042) | [cergo666/Florida](https://github.com/cergo666/Florida) (identities на каждую сборку) |
+| Тег релиза | мог браться не с того репо | всегда `cergo666/Florida` |
+| Listen | **`0.0.0.0:27042`** | **`127.0.0.1`** + `control_port` из `identities.json` |
+| Конфиг | `port=27042` | `port` + `listen` в `module.cfg`, JSON кладётся в zip |
+| Распаковка gzip | `florida-$ARCH` ломается на x86_64 (файл `florida-x64`) | stem архива: `florida-x64.gz` → `florida-x64` |
+| Клиент на ПК | `frida -U` / руками `-H` и forward | [`scripts/hluda`](scripts/hluda): порт из cfg, `adb forward`, аргументы в `frida` |
+| Web UI | порт 27042, listen `0.0.0.0` | порт из identities, поле listen |
+| CI | релиз только если тег Florida ≠ тег модуля | то же на schedule; **Run workflow** пересобирает и обновляет zip |
+| Проверки | нет | `sh tests/test_scripts.sh` на каждый push |
+| Документация | EN, ссылки на Exo1i | RU + EN |
+
+`frida -U` по-прежнему ждёт 27042. Для стелса используйте `hluda`; для `-U` в Web UI можно выставить `127.0.0.1:27042`.
 
 ## Подключение
 
@@ -99,6 +119,7 @@ Florida убирает известные **строки** в бинарнике
 
 ## Ссылки
 
+- [Exo1i/MagiskHluda](https://github.com/Exo1i/MagiskHluda)
 - [Florida](https://github.com/cergo666/Florida)
 - [Frida](https://github.com/frida/frida)
 - [Ylarod/Florida](https://github.com/Ylarod/Florida)
