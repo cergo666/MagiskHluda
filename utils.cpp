@@ -15,7 +15,7 @@ const std::string basePath = "./module_template/";
 
 std::string utils::getRecentTag()
 {
-    const std::string url = "https://api.github.com/repos/cergo666/Florida/releases/latest";
+    const std::string url = "https://api.github.com/repos/cergo666/Florida/releases?per_page=20";
     RestClient::Response response = RestClient::get(url);
 
     if (response.code != 200)
@@ -26,12 +26,39 @@ std::string utils::getRecentTag()
     rapidjson::Document d;
     d.Parse(response.body.c_str());
 
-    if (!d.HasMember("tag_name") || !d["tag_name"].IsString())
+    if (!d.IsArray())
     {
-        throw std::runtime_error("Invalid JSON response: missing or invalid 'tag_name'");
+        throw std::runtime_error("Invalid JSON response: expected a release list");
     }
 
-    std::string tag = d["tag_name"].GetString();
+    // The newest release can be published without binaries when the Florida
+    // build fails, so take the newest one that actually ships a server.
+    std::string tag;
+    for (const auto& rel : d.GetArray())
+    {
+        if (!rel.HasMember("tag_name") || !rel["tag_name"].IsString() || !rel.HasMember("assets") ||
+            !rel["assets"].IsArray())
+            continue;
+        if (rel.HasMember("draft") && rel["draft"].IsBool() && rel["draft"].GetBool())
+            continue;
+        for (const auto& asset : rel["assets"].GetArray())
+        {
+            if (asset.HasMember("name") && asset["name"].IsString() &&
+                std::string(asset["name"].GetString()).rfind("florida-server-", 0) == 0)
+            {
+                tag = rel["tag_name"].GetString();
+                break;
+            }
+        }
+        if (!tag.empty())
+            break;
+    }
+
+    if (tag.empty())
+    {
+        throw std::runtime_error("No Florida release with florida-server assets found");
+    }
+
     std::ofstream("currentTag.txt") << tag;
     return tag;
 }

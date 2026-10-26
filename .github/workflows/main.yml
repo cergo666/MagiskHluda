@@ -31,7 +31,7 @@ jobs:
       - name: Fetch release info
         run: |
           sudo apt-get update && sudo apt-get install -y jq
-          echo "LATESTFLORIDARELEASETAG=$(curl -s https://api.github.com/repos/cergo666/Florida/releases/latest | jq -r '.tag_name')" >> $GITHUB_ENV
+          echo "LATESTFLORIDARELEASETAG=$(curl -s "https://api.github.com/repos/cergo666/Florida/releases?per_page=20" | jq -r '[.[] | select(.draft == false and any(.assets[]?; .name | startswith("florida-server-")))][0].tag_name')" >> $GITHUB_ENV
           echo "LATESTMODULETAG=$(curl -s https://api.github.com/repos/cergo666/MagiskHluda/releases/latest | jq -r '.tag_name')" >> $GITHUB_ENV
       - name: Check if release needed
         id: check_release
